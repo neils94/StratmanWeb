@@ -1,0 +1,23 @@
+Roadmap:
+HTML/CSS teplates -> Django routes to URL endpoints -> search endpoints go to ydc api -> get and set responses from ydc -> responses end up on html/css templates via jinja -> response and query copy is stored for later retrieval on client side (look into storing potentially in sql db or another non relational db when at this step) -> set up OAuth for authentication and signup -> setup payment broker to keep track of personal information and payments (last two steps should be done statically by third party vendors)
+
+
+Views.py:
+Views page will dictate what content is available and the URLconf's (Django's mapping method from URl to views page) to route the correct URL's to the correct python functions and templates.
+
+Map out potential views:
+
+Homepage - displays background color and searchbar with tabs at the top and instructions about how to use the LLM search (rag vs 				 	news and how to extract either)
+
+Signup page - displays OAuth 
+
+Account page - displays background color, payment history and account access level (if account is canceled re-direct to homepage)
+
+Payment page - displays background color, gives details of pricing tiers 
+
+Search histoy - displays background color, retrieves stored search query and responses indexed by date (might be too db dependent, do this later vresions)
+
+Search page - displays background color, response from API's depending on context given
+
+
+
