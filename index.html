@@ -1,42 +1,69 @@
- <!DOCTYPE html>
- <html lang="en">
- <head>
-     <meta charset="UTF-8">
-     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Search</title>
-     <link rel="stylesheet" href="static/stylesheet.css">
-     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
- </head>
- <body>
-    <!-- Headers -->
-    <div class="header">
-        <div class="header__left">
-            <a href="#">Home</a>
-            <a href="#">Account</a>
-            <a href="#">Contact</a> 
-            <span class="material-icons header__apps">account_circle</span>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>SPA with Search and Account</title>
+    <!-- Adjusted the CSS path to be relative -->
+    <link rel="stylesheet" type="text/css" href="/home/neil/stratman_site/mysite/templates/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <!-- Main Navigation -->
+    <nav class="top-right-tabs" aria-label="Main Navigation">
+        <button id="accountButton" class="tab-button">Account</button>
+        <div id="accountDropdown" class="dropdown-content" style="display: none;">
+            <button>Services</button>
+            <button>Preferences</button>
+            <button>Contact</button>
         </div>
+    </nav>
 
-        <div class="header__right">
-            <a href="#">Login</a>
-            <a href="#">Limitless</a>
-            
+    <!-- Search Section -->
+    <section class="search-container">
+        <input type="text" id="search-input" class="search-bar" aria-label="Search" placeholder="Press M for menu or enter your search!">
+        <div id="search-results-container"></div>
+        <button id="search-button" onclick="sendSearchQuery()">Search</button>
+    </section>
+    
+    <script>
+    function sendSearchQuery() {
+        const query = document.getElementById('search-input').value;
+        fetch(`/search?query=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                // Handle the response, e.g., redirect to the new URL
+                window.location.href = data.redirect;
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    </script>
 
-        </div>
-    </div>
-    <!-- End Headers -->
-    <!-- Main Body Start-->
-    <div class="mainBody">
-        <!-- Search bar -->
-        <div class="search">
-            <div class="search__input">
-                <span class="material-symbols-outlined">search</span>                
-                <input type="text" name="search" placeholder="Ask me anything!">
-            </form>
+    <!-- Services Section -->
+    <section id="servicesSection" class="hidden-section">
+        <h2>Our Services</h2>
+        <p><!-- Insert text about your services here --></p>
+    </section>
+    
+    <!-- Preferences Section -->
+    <section id="preferencesSection" class="hidden-section">
+        <h2>Preferences</h2>
+        <p><!-- Insert text about preferences here --></p>
+    </section>
+    
+    <!-- Contact Section -->
+    <section id="contactSection" class="hidden-section">
+        <h2>Contact Us</h2>
+        <form action="submit-form-url" method="post">
+            <!-- Form contents -->
+        </form>
+    </section>
 
-    </div>
-    <!-- Main Body End -->
-
- </body>
- </html>
+    <!-- Adjusted the script paths to be relative -->
+    <script src="account.js" defer></script>
+    <script src="visibility.js"></script>
+</body>
+</html>
