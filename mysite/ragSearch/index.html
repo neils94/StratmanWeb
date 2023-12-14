@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>SPA with Search and Account</title>
+    <!-- Adjusted the CSS path to be relative -->
+    <link rel="stylesheet" type="text/css" href="/home/neil/stratman_site/mysite/templates/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="/home/neil/Downloads/dalle.png" alt="Logo"> <!-- Logo image -->
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="top-right-tabs" aria-label="Main Navigation">
+        <button id="accountButton" class="tab-button">Account</button>
+        <div id="accountDropdown" class="dropdown-content" style="display: none;">
+            <button>Services</button>
+            <button>Preferences</button>
+            <button>Contact</button>
+        </div>
+    </nav>
+
+    <!-- Search Section -->
+    <section class="search-container">
+        <div class="search-wrapper">
+            <input type="text" id="search-input" class="search-bar" aria-label="Search" placeholder="Press M for menu or enter your search!">
+            <img src="/home/neil/Downloads/greenarrow.png" id="search-button" alt="Search" onclick="sendSearchQuery()">
+        </div>
+        <div id="search-results-container"></div>
+    </section>
+    
+    <script>
+        function sendSearchQuery() {
+            const query = document.getElementById('search-input').value;
+            fetch('http://127.0.0.1:5500/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: query })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle the response, e.g., redirect to the new URL
+                window.location.href = data.redirect;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        
+    </script>
+
+    <!-- Services Section -->
+    <section id="servicesSection" class="hidden-section">
+        <h2>Our Services</h2>
+        <p><!-- Insert text about your services here --></p>
+    </section>
+    
+    <!-- Preferences Section -->
+    <section id="preferencesSection" class="hidden-section">
+        <h2>Preferences</h2>
+        <p><!-- Insert text about preferences here --></p>
+    </section>
+    
+    <!-- Contact Section -->
+    <section id="contactSection" class="hidden-section">
+        <h2>Contact Us</h2>
+        <form action="submit-form-url" method="post">
+            <!-- Form contents -->
+        </form>
+    </section>
+
+    <!-- Adjusted the script paths to be relative -->
+    <script src="account.js" defer></script>
+    <script src="visibility.js"></script>
+    <script src="search.js"></script>
+
+</body>
+</html>
