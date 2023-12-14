@@ -38,7 +38,7 @@
     <script>
         function sendSearchQuery() {
             const query = document.getElementById('search-input').value;
-            fetch('http://127.0.0.1:5500/search', {
+            fetch('localhost:5000', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
