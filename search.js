@@ -1,32 +1,51 @@
 import { ChatOpenAI } from "langchain/chat_models/openai";
-import fs from "fs";
+import { MomentoCache } from "langchain/cache/momento";
 import { MozillaReadabilityTransformer } from "langchain/document_transformers/mozilla_readability";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { InMemoryCache } from "@langchain/core/caches";
+import request from 'request';
 
-var request = require('request');
+// Environment variables should be used for sensitive information
+const apiKeyForOpenAI = process.env.OPENAI_API_KEY;
+const momentoAPIKey = process.env.MOMENTO_API_KEY;
+const momentoRefreshToken = process.env.MOMENTO_REFRESH_TOKEN;
 
-////DON'T FORGET TO ADD PNPM GOMOMENTO/SDK AND GOMOMENTO/SDK-WEB
+// Cache configuration
+const cache = new MomentoCache({
+  client: new CacheClient({
+    configuration: Configurations.Laptop.v1(),
+    credentialProvider: CredentialProvider.fromEnvironmentVariable({
+      environmentVariableName: momentoAPIKey,
+    }),
+    defaultTtlSeconds: 60 * 60 * 24, // 24 hours
+  }),
+  cacheName: "langchain",
+});
 
-const openai = new ChatOpenAI();
-const apiKeyForOpenAI = "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"
-const hotKeyMap = new Map();
-const transformer = new MozillaReadabilityTransformer();
-
+// OpenAI instance
+const openai = new ChatOpenAI({
+  modelName: "gpt-4-turbo",
+  cache: true
+});
 
 async function main(query) {
-
-    hotkey, ticker = query.split("$");
-    url = getURL(hotkey, ticker);
-    jsonData = getAlphaVantageData(url);
-    const sequence = splitter.pipe(transformer);
-    const splitter = RecursiveCharacterTextSplitter.fromLanguage("html");
-    const newDocuments = await sequence.invoke(docs);
-    if (hotkey == 'GT'){
-      getSuggestions(ticker, documents) 
+  const [hotkey, ticker] = query.split("$");
+  const url = getURL(hotkey, ticker);
+  const jsonData = await getAlphaVantageData(url);
+  const splitter = RecursiveCharacterTextSplitter.fromLanguage("html");
+  const transformer = new MozillaReadabilityTransformer();
+  const sequence = splitter.pipe(transformer);
+  const newDocuments = await sequence.invoke(jsonData); 
+  if (hotkey === 'GT') {
+    await getSuggestions(ticker, newDocuments);
+    const BaseGoogleTrentHotKeyResponse = await openai.chat.completions.create({
+        "role" : "system",
+        "content": "Use the cache with to retrieve the last 5 stored values".join(ticker),
+        
+      })
     }
   if (hotkey != 'GT') {
-    const completion = await openai.chat.completions.create({
+    const BaseHotKeyResponse = await openai.chat.completions.create({
         messages: [{
             "role": "system", 
 
@@ -52,7 +71,7 @@ async function main(query) {
     console.log(completion.choices[0]);
     }
 
-function getSuggestions(ticker, documents) {
+async function getSuggestions(ticker, documents) {
   const completion = await openai.chat.completions.create({
     messages: [{
       "role": "system", 
@@ -68,22 +87,25 @@ function getSuggestions(ticker, documents) {
     model: "gpt-4-turbo",
   });
 }
-function getAlphaVantageData(url) {
-    request.get({
-        url: url,
-        json: true,
-        headers: {'User-Agent': 'request'}
-        }, (err, res, data) => {
-        if (err) {
-            console.log('Error:', err);
-        } else if (res.statusCode !== 200) {
-            console.log('Status:', res.statusCode);
-        } else {
-            // data is successfully parsed as a JSON object:
-            return data;
-        }
+async function getAlphaVantageData(url) {
+  try {
+    const response = await request.get({
+      url: url,
+      json: true,
+      headers: {'User-Agent': 'request'}
     });
+    if (response.statusCode === 200) {
+      return response.body;
+    } else {
+      console.error('Error with status code:', response.statusCode);
+      return null;
+    }
+  } catch (error) {
+    console.error('Request failed:', error);
+    return null;
+  }
 }
+
 
 function getURL(hotkey, ticker) {
     const urlMappings = new Map();
