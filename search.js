@@ -6,6 +6,7 @@ import { InMemoryCache } from "@langchain/core/caches";
 
 var request = require('request');
 
+////DON'T FORGET TO ADD PNPM GOMOMENTO/SDK AND GOMOMENTO/SDK-WEB
 
 const openai = new ChatOpenAI();
 const apiKeyForOpenAI = "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"
@@ -22,7 +23,7 @@ async function main(query) {
     const splitter = RecursiveCharacterTextSplitter.fromLanguage("html");
     const newDocuments = await sequence.invoke(docs);
     if (hotkey == 'GT'){
-      //retrieve trends data
+      getSuggestions(ticker, documents) 
     }
   if (hotkey != 'GT') {
     const completion = await openai.chat.completions.create({
@@ -51,7 +52,7 @@ async function main(query) {
     console.log(completion.choices[0]);
     }
 
-function getSuggestions(ticker, query, documents) {
+function getSuggestions(ticker, documents) {
   const completion = await openai.chat.completions.create({
     messages: [{
       "role": "system", 
@@ -59,10 +60,9 @@ function getSuggestions(ticker, query, documents) {
     },
     {"role" : "user",
      
-     "content": " +query + "},
+     "content": "" +query + "."},
      
-    {"role" : "assistant", "content" : "You are an assistant that is going to use the following stock ticker to provide 5 useful words that the user will use the stocks current popularity, you can use any news articles you have access to in order to add context with new products or services that is listed in the news articles. If there are no news articles, provide the stock tickers full company name if you are aware of it. Here is the ticker: " + ticker + "."
-      
+    {"role" : "assistant", "content" : "< use the system message above > Provide 5 useful words that the user will use the stocks current popularity, you can use any news articles you have access to in order to add context with new products or services that is listed in the news articles. If there are no news articles, provide the stock tickers full company name if you are aware of it. Here is the ticker: " + ticker + ". Then provide the user with two hotkeys: R = Regenerate, and KW = Keep words. If the user types R: regenerate 5 new words. If the user types Use: then store the words in a cache for another task."
     }
     ],
     model: "gpt-4-turbo",
