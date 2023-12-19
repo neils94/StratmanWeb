@@ -24,7 +24,7 @@ async function main(query) {
     if (hotkey == 'GT'){
       //retrieve trends data
     }
-  if (hotkey != 'GT' {
+  if (hotkey != 'GT') {
     const completion = await openai.chat.completions.create({
         messages: [{
             "role": "system", 
@@ -51,19 +51,22 @@ async function main(query) {
     console.log(completion.choices[0]);
     }
 
-function getSuggestions(ticker) {
+function getSuggestions(ticker, query, documents) {
   const completion = await openai.chat.completions.create({
     messages: [{
       "role": "system", 
-      "content": "You are an assistant that is going to use the following stock ticker to provide 5 useful words that the user will use the stocks current popularity, you can use any news articles you have access to in order to add context with new products or services that is listed in the news articles. If there are no news articles, provide the stock tickers full company name if you are aware of it. Here is the ticker: " + ticker + "."
-            },
+      "content": "use the documents available to you to suggest search terms associated with the stock ticker: " + ticker + ". Here are the available documents:".join(documents)
+    },
     {"role" : "user",
      
-     "content": "What are the top 5 trending stocks in the US"
+     "content": " +query + "},
+     
+    {"role" : "assistant", "content" : "You are an assistant that is going to use the following stock ticker to provide 5 useful words that the user will use the stocks current popularity, you can use any news articles you have access to in order to add context with new products or services that is listed in the news articles. If there are no news articles, provide the stock tickers full company name if you are aware of it. Here is the ticker: " + ticker + "."
+      
     }
     ],
     model: "gpt-4-turbo",
-  };
+  });
 }
 function getAlphaVantageData(url) {
     request.get({
