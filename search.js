@@ -66,6 +66,16 @@ const shuffle = (array) => {
   return array; 
 }; 
 
+
+const date = new Date();
+
+let day = date.getDate();
+let month = date.getMonth();
+let year = date.getFullYear() - 1;
+
+// This arrangement can be altered based on how we want the date's format to appear.
+let currentDate = `${day}-${month}-${year}`;
+
 async function getSuggestions(ticker, documents) {
   const completion = await chatopenai2.chat.completions.create({
     messages: [{
@@ -163,10 +173,10 @@ async function main(event) {
     topQueries, topTopics = await getTopRelatedGoogleTrends(suggestions);
     query_array.push(topQueries, topTopics);
     const randomized_array = shuffle(query_array).slice(0,5);
-    data = await googleTrends.interestOverTime({keyword: randomized_array});
+    data = await googleTrends.interestOverTime({keyword: randomized_array, startTime: currentDate});
     //interest over time
     const BaseGoogleTrentHotKeyResponse = await model.call(
-        "Use the data provided" +data+ "a graph of interest over time with the y axis being the interest and the x axis being time"
+        "Use the data provided to plot 5 separate line charts of interest over time with the y axis being the interest in the range [0-100] and the x axis being time"
       );
       }
     }
