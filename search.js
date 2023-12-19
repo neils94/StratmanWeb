@@ -1,6 +1,7 @@
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { MomentoCache } from "langchain/cache/momento";
 import { MozillaReadabilityTransformer } from "langchain/document_transformers/mozilla_readability";
+import { CommaSeparatedListOutputParser } from "langchain/output_parsers";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import request from 'request';
 import {
@@ -13,7 +14,8 @@ import {
 const apiKeyForOpenAI = process.env.OPENAI_API_KEY;
 const momentoAPIKey = process.env.MOMENTO_API_KEY;
 const momentoRefreshToken = process.env.MOMENTO_REFRESH_TOKEN;
-
+const googleTrends = require('google-trends-api');
+var request = require('request')
 // Cache configuration
 const client = new MomentoCache({
   client: new CacheClient({
@@ -49,8 +51,11 @@ async function getSuggestions(ticker, documents) {
      
      "content": "" +query + "."},
      
-    {"role" : "assistant", "content" : "< use the system message above > Provide 5 useful words that the user will use the stocks current popularity, you can use any news articles you have access to in order to add context with new products or services that is listed in the news articles. If there are no news articles, provide the stock tickers full company name if you are aware of it. Here is the ticker: " + ticker + ". Then provide the user with two hotkeys: R = Regenerate, and KW = Keep words. If the user types R: regenerate 5 new words. If the user types Use: then store the words in a cache for another task."
-    }
+    {"role" : "assistant", "content" : "< use the system message above > take the ticker:" + ticker + " return 5 different search queries with the company name. Example: Apple stock, Apple price, Apple product, Apple release, Apple iphone. After your suggestion, end the message with two hotkeys and definitions: R: Regenerate words, K: Keep words. Pressing K will return the same 5 queries. Pressing R will return new queries."},
+    {"role": "user",
+    "content": "prompt"},
+    {"role": "assistant",
+    "content": "If the user presses the hotkey K, the system will return the same 5 queries and store the queries in. If the user presses the hotkey R, will return new queries."}
     ],
     model: "gpt-4-turbo",
   });
