@@ -1,5 +1,5 @@
 import { ChatOpenAI } from "langchain/chat_models/openai";
-import { MomentoCache } from "langchain/cache/momento";
+import { CacheClient, Configurations, CredentialProvider } from "@gomomento/sdk";
 import { MozillaReadabilityTransformer } from "langchain/document_transformers/mozilla_readability";
 import { CommaSeparatedListOutputParser } from "langchain/output_parsers";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
@@ -34,15 +34,22 @@ const cache = await MomentoCache.fromProps({
 });
 
 // OpenAI instance
-const openai = new ChatOpenAI({
+const chatopenai = new ChatOpenAI({
   modelName: "gpt-4-turbo",
   cache
 });
 
+const chatopenai2 = new ChatOpenAI({
+  modelName: "gpt-4-turbo",
+  cache,
+  parser
+});
+
+const parser = new CommaSeparatedListOutputParser();
 
 
 async function getSuggestions(ticker, documents) {
-  const completion = await openai.chat.completions.create({
+  const completion = await chatopenai2.chat.completions.create({
     messages: [{
       "role": "system", 
       "content": "use the documents available to you to suggest search terms associated with the stock ticker: " + ticker + ". Here are the available documents:".join(documents)
@@ -52,13 +59,16 @@ async function getSuggestions(ticker, documents) {
      "content": "" +query + "."},
      
     {"role" : "assistant", "content" : "< use the system message above > take the ticker:" + ticker + " return 5 different search queries with the company name. Example: Apple stock, Apple price, Apple product, Apple release, Apple iphone. After your suggestion, end the message with two hotkeys and definitions: R: Regenerate words, K: Keep words. Pressing K will return the same 5 queries. Pressing R will return new queries."},
+               
     {"role": "user",
     "content": "prompt"},
+  
     {"role": "assistant",
-    "content": "If the user presses the hotkey K, the system will return the same 5 queries and store the queries in. If the user presses the hotkey R, will return new queries."}
+    "content": "If the user presses the hotkey K, the system will return the same 5 queries in an array format and store the queries in. If the user presses the hotkey R, will return new queries."}
     ],
     model: "gpt-4-turbo",
   });
+  return completion.choices[0].message.content;
 }
 async function getAlphaVantageData(url) {
   try {
@@ -92,24 +102,54 @@ function getURL(hotkey, ticker) {
   return urlMappings.get(hotkey).replace('{symbol}', encodeURIComponent(ticker));
 }
 
-async function main(query) {
+async function getTopRelatedGoogleTrends(keyword) {
+    try {
+        // Fetch related queries and topics
+        const [relatedQueriesResult, relatedTopicsResult] = await Promise.all([
+            googleTrends.relatedQueries({ keyword }),
+            googleTrends.relatedTopics({ keyword })
+        ]);
+
+        // Parse and extract top 5 related queries
+        const relatedQueries = JSON.parse(relatedQueriesResult).default.rankedList[0].rankedKeyword.slice(0, 5);
+        const topRelatedQueries = relatedQueries.map(query => query.query);
+
+        // Parse and extract top 5 related topics
+        const relatedTopics = JSON.parse(relatedTopicsResult).default.rankedList[0].rankedKeyword.slice(0, 5);
+        const topRelatedTopics = relatedTopics.map(topic => topic.topic.title);
+
+        return {
+            topRelatedQueries,
+            topRelatedTopics
+        };
+    } catch (error) {
+        console.error('Error fetching Google Trends data:', error);
+        return null;
+    }
+}
+document.getElementById('searchBar').addEventListener('input', main);
+
+async function main(event) {
+  const query = event.target.value; // Get query from search bar
   const [hotkey, ticker] = query.split("$");
+  if (!query) return; // Exit if query is empty
   const url = getURL(hotkey, ticker);
   const jsonData = await getAlphaVantageData(url);
   const splitter = RecursiveCharacterTextSplitter.fromLanguage("html");
   const transformer = new MozillaReadabilityTransformer();
   const sequence = splitter.pipe(transformer);
-  const newDocuments = await sequence.invoke(jsonData); 
+  const newDocuments = await sequence.invoke(jsonData);
   if (hotkey === 'GT') {
-    await getSuggestions(ticker, newDocuments);
+    var suggestions = await getSuggestions(ticker, newDocuments);
+    topQueries, topTopics = await getTopRelatedGoogleTrends(suggestions);
     const BaseGoogleTrentHotKeyResponse = await openai.chat.completions.create({
         "role" : "system",
-        "content": "Use the cache with to retrieve the last 5 stored values".join(ticker),
+        "content": "Use the suggestions:" + suggestions + "",
 
       })
     }
   if (hotkey != 'GT') {
-    const BaseHotKeyResponse = await openai.chat.completions.create({
+    const BaseHotKeyResponse = await chatopenai.chat.completions.create({
         messages: [{
             "role": "system", 
 
