@@ -4,6 +4,7 @@ import { MozillaReadabilityTransformer } from "langchain/document_transformers/m
 import { CommaSeparatedListOutputParser } from "langchain/output_parsers";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import request from 'request';
+import {OpenAI} from "langchain/llms/OpenAI";
 import {
   CacheClient,
   Configurations,
@@ -36,17 +37,34 @@ const cache = await MomentoCache.fromProps({
 // OpenAI instance
 const chatopenai = new ChatOpenAI({
   modelName: "gpt-4-turbo",
-  cache
+  cache,
+  openAIApiKey: apiKeyForOpenAI
+
 });
 
 const chatopenai2 = new ChatOpenAI({
   modelName: "gpt-4-turbo",
   cache,
-  parser
+  parser,
+  openAIApiKey: apiKeyForOpenAI
+});
+
+const openai = new OpenAI({
+  modelName: "gpt-4-turbo-1106",
+  temperature: 0.9,
+  openAIApiKey: apiKeyForOpenAI // In Node.js defaults to process.env.OPENAI_API_KEY
 });
 
 const parser = new CommaSeparatedListOutputParser();
 
+// declare the function 
+const shuffle = (array) => { 
+  for (let i = array.length - 1; i > 0; i--) { 
+    const j = Math.floor(Math.random() * (i + 1)); 
+    [array[i], array[j]] = [array[j], array[i]]; 
+  } 
+  return array; 
+}; 
 
 async function getSuggestions(ticker, documents) {
   const completion = await chatopenai2.chat.completions.create({
@@ -141,12 +159,16 @@ async function main(event) {
   const newDocuments = await sequence.invoke(jsonData);
   if (hotkey === 'GT') {
     var suggestions = await getSuggestions(ticker, newDocuments);
+    var query_array = [suggestions];
     topQueries, topTopics = await getTopRelatedGoogleTrends(suggestions);
-    const BaseGoogleTrentHotKeyResponse = await openai.chat.completions.create({
-        "role" : "system",
-        "content": "Use the suggestions:" + suggestions + "",
-
-      })
+    query_array.push(topQueries, topTopics);
+    const randomized_array = shuffle(query_array).slice(0,5);
+    data = await googleTrends.interestOverTime({keyword: randomized_array});
+    //interest over time
+    const BaseGoogleTrentHotKeyResponse = await model.call(
+        "Use the data provided" +data+ "a graph of interest over time with the y axis being the interest and the x axis being time"
+      );
+      }
     }
   if (hotkey != 'GT') {
     const BaseHotKeyResponse = await chatopenai.chat.completions.create({
