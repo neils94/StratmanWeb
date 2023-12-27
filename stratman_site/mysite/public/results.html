@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/templates/body_style.css">
+    <title>Search Results</title>
+</head>
+<body>
+    <div id="chatHistoryContainer"></div>
+        <div id="historyTabs"></div>
+        <div id="chatDisplay"></div>
+    </div>
+    <script src="script.js"></script>
+    <input type="text" id="search-input" placeholder="Enter your search query">
+    <button onclick="fetchSearchResults()">Search</button>
+    <div id="results-container"></div>
+
+    <script>
+        function fetchSearchResults() {
+            const query = document.getElementById('search-input').value;
+            fetch(`/search?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    displayResults(data.results);
+                })
+                .catch(error => console.error('Error fetching results:', error));
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('results-container');
+            container.innerHTML = ''; // Clear previous results
+            results.forEach(result => {
+                const resultElement = document.createElement('div');
+                resultElement.textContent = result;
+                container.appendChild(resultElement);
+            });
+        }
+    </script>
+</body>
+</html>

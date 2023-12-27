@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>SPA with Search and Account</title>
+    <!-- Adjusted the CSS path to be relative -->
+    <link rel="stylesheet" type="text/css" href="/templates/style.css">
+    <script type="text/javascript" src="https://npmcdn.com/parse/dist/parse.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="/templates/static/dalle.jpg" alt="Logo"> <!-- Logo image -->
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="top-right-tabs" aria-label="Main Navigation">
+        <button id="accountButton" class="tab-button">Account</button>
+        <div id="accountDropdown" class="dropdown-content" style="display: none;">
+            <button>Services</button>
+            <button>Preferences</button>
+            <button>Contact</button>
+        </div>
+    </nav>
+
+    <!-- Search Section -->
+        <form id="searchForm">
+            <input type="text" id="search-input" placeholder="Press M for the menu to see the hotkey options!">
+            <button type="submit">
+                <img src="/templates/static/greenarrow.jpg" id="search-button" alt="Search">
+            </button>
+        </form>
+        </div>
+        <div id="searchResults"></div>
+
+
+
+
+
+    <section class="disclaimer-container">
+        <p>Stratman AI L.L.C is not liable for any financial decisions made using this GPT. Please consider double checking information or consulting a financial advisor.</p>
+    </section>
+    
+    <!-- Add Send Button -->
+    <button id="sendButton">Send</button>
+
+    <!-- Add Chat Display and History Tabs (if needed) -->
+    <div id="chatDisplay"></div>
+    <div id="historyTabs"></div>
+
+
+    <!-- Services Section -->
+    <section id="servicesSection" class="hidden-section">
+        <h2>Our Services</h2>
+        <p><!-- Insert text about your services here --></p>
+    </section>
+    
+    <!-- Preferences Section -->
+    <section id="preferencesSection" class="hidden-section">
+        <h2>Preferences</h2>
+        <p><!-- Insert text about preferences here --></p>
+    </section>
+    
+    <!-- Contact Section -->
+    <section id="contactSection" class="hidden-section">
+        <h2>Contact Us</h2>
+        <form action="submit-form-url" method="post">
+            <!-- Form contents -->
+        </form>
+    </section>
+
+    <!-- Adjusted the script paths to be relative -->
+    <script src="/visibleJS/account.js" defer></script>
+    <script src="/visibleJS/visibility.js"></script>
+    <script src="/visibleJS/script.js"></script>
+    <script>
+        // Initialize Parse
+          Parse.initialize("YOUR_PARSE_APP_ID", "YOUR_PARSE_JS_KEY"); //PASTE HERE YOUR Back4App APPLICATION ID AND YOUR JavaScript KEY
+          Parse.serverURL = "https://parseapi.back4app.com/";
+    </script>
+</body>
+</html>
+
